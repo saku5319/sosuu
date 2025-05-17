@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>さくの素数を探せゲーム</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: linear-gradient(to top right, #c9e4f1, #f1faff);
+      overflow: hidden;
+    }
+
+    #game {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #score {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .bubble {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 120px;
+      height: 120px;
+      background-color: rgba(135, 206, 235, 0.7);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2em;
+      color: #333;
+      user-select: none;
+      transition: transform 0.3s ease;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      cursor: grab;
+    }
+
+    .correct {
+      animation: pop 0.5s forwards;
+    }
+
+    .wrong {
+      animation: shake 0.4s;
+      background-color: rgba(255, 99, 71, 0.8);
+    }
+
+    @keyframes pop {
+      to {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.5);
+      }
+    }
+
+    @keyframes shake {
+      10% { transform: translate(calc(-50% + 10px), -50%); }
+      30% { transform: translate(calc(-50% - 10px), -50%); }
+      50% { transform: translate(calc(-50% + 8px), -50%); }
+      70% { transform: translate(calc(-50% - 8px), -50%); }
+      90% { transform: translate(calc(-50% + 4px), -50%); }
+      100% { transform: translate(-50%, -50%); }
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="score">得点: 0</div>
+    <div class="bubble" id="bubble">2</div>
+  </div>
+
+  <script>
+    const bubble = document.getElementById('bubble');
+    const scoreDisplay = document.getElementById('score');
+    let score = 0;
+    let currentNumber = 2;
+    let startX = 0;
+
+    function isPrime(n) {
+      if (n < 2) return false;
+      for (let i = 2; i <= Math.sqrt(n); i++) {
+        if (n % i === 0) return false;
+      }
+      return true;
+    }
+
+    function getRandomNumber() {
+      return Math.floor(Math.random() * 98) + 2;
+    }
+
+    function updateScore(change) {
+      score += change;
+      scoreDisplay.textContent = `得点: ${score}`;
+    }
+
+    function newBubble() {
+      currentNumber = getRandomNumber();
+      bubble.textContent = currentNumber;
+      bubble.style.opacity = 1;
+      bubble.className = 'bubble';
+      bubble.style.transform = 'translate(-50%, -50%)';
+    }
+
+    function handleResult(correct) {
+      if (correct) {
+        bubble.classList.add('correct');
+        updateScore(1);
+      } else {
+        bubble.classList.add('wrong');
+        updateScore(-1);
+      }
+
+      setTimeout(() => {
+        newBubble();
+      }, 500);
+    }
+
+    bubble.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+    });
+
+    bubble.addEventListener('touchmove', (e) => {
+      let moveX = e.touches[0].clientX - startX;
+      bubble.style.transform = `translate(calc(-50% + ${moveX}px), -50%)`;
+    });
+
+    bubble.addEventListener('touchend', (e) => {
+      let endX = e.changedTouches[0].clientX;
+      let delta = endX - startX;
+
+      const prime = isPrime(currentNumber);
+
+      if (delta < -50 && prime) {
+        handleResult(true);
+      } else if (delta > 50 && !prime) {
+        handleResult(true);
+      } else if (Math.abs(delta) > 50) {
+        handleResult(false);
+      } else {
+        bubble.style.transform = 'translate(-50%, -50%)';
+ 
+     }
+    });
+
+    // 最初のバブル
+    newBubble();
+  </script>
+</body>
+</html>
